@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web App Multi-Login GitHub Pages</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
+        h2 { text-align: center; margin-bottom: 20px; color: #333; }
+        input, button { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        .tunnel-box { margin-bottom: 15px; }
+        .tunnel-box input { background: #fffde6; border: 1px solid #ffd480; }
+        #message { text-align: center; color: red; font-size: 14px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h2>Multi Login</h2>
+    
+    <div class="tunnel-box">
+        <label for="tunnelUrl" style="font-size: 12px; font-weight: bold; color: #666;">URL Tunnel Ponsel (Localtunnel):</label>
+        <input type="text" id="tunnelUrl" placeholder="https://xxxx.loca.lt">
+    </div>
+
+    <input type="text" id="username" placeholder="Username (admin1 / user1)">
+    <input type="password" id="password" placeholder="Password (admin123 / user123)">
+    <button onclick="prosesLogin()">Masuk (Login)</button>
+    
+    <div id="message"></div>
+</div>
+
+<script>
+    async function prosesLogin() {
+        const tunnelUrl = document.getElementById('tunnelUrl').value.trim();
+        const usernameInput = document.getElementById('username').value;
+        const passwordInput = document.getElementById('password').value;
+        const msgDiv = document.getElementById('message');
+
+        if (!tunnelUrl) {
+            msgDiv.innerText = "Masukkan URL Tunnel Ponsel Anda dahulu!";
+            return;
+        }
+
+        msgDiv.style.color = "blue";
+        msgDiv.innerText = "Mencoba masuk...";
+
+        try {
+            // Menembak API login yang berjalan di dalam ponsel melalui internet
+            const response = await fetch(`${tunnelUrl}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: usernameInput, password: passwordInput })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                msgDiv.style.color = "green";
+                msgDiv.innerText = `Login Berhasil! Role Anda: ${data.role.toUpperCase()}`;
+                
+                // Simpan data login di penyimpanan browser lokal
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.role);
+
+                // Simulasi pengalihan halaman berdasarkan hak akses (Multi-Login)
+                alert(`Selamat datang ${usernameInput}! Anda masuk sebagai Halaman ${data.role.toUpperCase()}`);
+            } else {
+                msgDiv.style.color = "red";
+                msgDiv.innerText = data.message || "Login gagal!";
+            }
+        } catch (error) {
+            msgDiv.style.color = "red";
+            msgDiv.innerText = "Gagal terhubung ke ponsel. Periksa kembali URL Tunnel Anda.";
+            console.error(error);
+        }
+    }
+</script>
+
+</body>
+</html>
